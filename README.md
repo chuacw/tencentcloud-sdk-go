@@ -1,14 +1,14 @@
-# 简介
+# Introduction
 
 欢迎使用腾讯云开发者工具套件（SDK）3.0，SDK3.0 是云 API3.0 平台的配套工具。后续所有的云服务产品都会接入进来。新版 SDK实 现了统一化，具有各个语言版本的 SDK 使用方法相同，接口调用方式相同，统一的错误码和返回包格式这些优点。
 
 为方便 GO 开发者调试和接入腾讯云产品 API，这里向您介绍适用于 GO 的腾讯云开发工具包，并提供首次使用开发工具包的简单示例。让您快速获取腾讯云 GO SDK 并开始调用。
 
-# 依赖环境
+# Required / Supported Environment
 
-1. Go 1.9 版本及以上，并设置好 GOPATH 等必须的环境变量。
-2. 使用相关产品前需要在腾讯云控制台已开通相应产品。
-3. 在腾讯云控制台[访问管理](https://console.cloud.tencent.com/cam/capi)页面获取 SecretID 和 SecretKey 。
+1. Go 1.9 and above, with GOPATH and other necessary environment variables set up.
+2. Before the use of related products, enable it on the Tencent Cloud Console.
+3. On the Tencent Cloud console[访问管理](https://console.cloud.tencent.com/cam/capi)page, obtain the SecretID and SecretKey.
 
 # 获取安装
 
