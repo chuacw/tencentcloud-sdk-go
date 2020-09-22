@@ -15,6 +15,9 @@ const (
 	POST = "POST"
 	GET  = "GET"
 
+	HTTP  = "http"
+	HTTPS = "https"
+
 	RootDomain = "tencentcloudapi.com"
 	Path       = "/"
 )
@@ -22,6 +25,9 @@ const (
 type Request interface {
 	GetAction() string
 	GetBodyReader() io.Reader
+	GetScheme() string
+	GetRootDomain() string
+	GetServiceDomain(string) string
 	GetDomain() string
 	GetHttpMethod() string
 	GetParams() map[string]string
@@ -29,12 +35,16 @@ type Request interface {
 	GetService() string
 	GetUrl() string
 	GetVersion() string
+	SetScheme(string)
+	SetRootDomain(string)
 	SetDomain(string)
 	SetHttpMethod(string)
 }
 
 type BaseRequest struct {
 	httpMethod string
+	scheme     string
+	rootDomain string
 	domain     string
 	path       string
 	params     map[string]string
@@ -65,8 +75,39 @@ func (r *BaseRequest) GetDomain() string {
 	return r.domain
 }
 
+func (r *BaseRequest) GetScheme() string {
+	return r.scheme
+}
+
+func (r *BaseRequest) GetRootDomain() string {
+	return r.rootDomain
+}
+
+func (r *BaseRequest) GetServiceDomain(service string) (domain string) {
+	rootDomain := r.rootDomain
+	if rootDomain == "" {
+		rootDomain = RootDomain
+	}
+	domain = service + "." + rootDomain
+	return
+}
+
 func (r *BaseRequest) SetDomain(domain string) {
 	r.domain = domain
+}
+
+func (r *BaseRequest) SetScheme(scheme string) {
+	scheme = strings.ToLower(scheme)
+	switch scheme {
+	case HTTP:
+		r.scheme = HTTP
+	default:
+		r.scheme = HTTPS
+	}
+}
+
+func (r *BaseRequest) SetRootDomain(rootDomain string) {
+	r.rootDomain = rootDomain
 }
 
 func (r *BaseRequest) SetHttpMethod(method string) {
@@ -92,9 +133,9 @@ func (r *BaseRequest) GetService() string {
 
 func (r *BaseRequest) GetUrl() string {
 	if r.httpMethod == GET {
-		return "https://" + r.domain + r.path + "?" + getUrlQueriesEncoded(r.params)
+		return r.GetScheme() + "://" + r.domain + r.path + "?" + GetUrlQueriesEncoded(r.params)
 	} else if r.httpMethod == POST {
-		return "https://" + r.domain + r.path
+		return r.GetScheme() + "://" + r.domain + r.path
 	} else {
 		return ""
 	}
@@ -104,7 +145,7 @@ func (r *BaseRequest) GetVersion() string {
 	return r.version
 }
 
-func getUrlQueriesEncoded(params map[string]string) string {
+func GetUrlQueriesEncoded(params map[string]string) string {
 	values := url.Values{}
 	for key, value := range params {
 		if value != "" {
@@ -116,8 +157,7 @@ func getUrlQueriesEncoded(params map[string]string) string {
 
 func (r *BaseRequest) GetBodyReader() io.Reader {
 	if r.httpMethod == POST {
-		s := getUrlQueriesEncoded(r.params)
-		//log.Printf("[DEBUG] body: %s", s)
+		s := GetUrlQueriesEncoded(r.params)
 		return strings.NewReader(s)
 	} else {
 		return strings.NewReader("")
@@ -125,7 +165,6 @@ func (r *BaseRequest) GetBodyReader() io.Reader {
 }
 
 func (r *BaseRequest) Init() *BaseRequest {
-	r.httpMethod = GET
 	r.domain = ""
 	r.path = Path
 	r.params = make(map[string]string)
@@ -140,6 +179,7 @@ func (r *BaseRequest) WithApiInfo(service, version, action string) *BaseRequest 
 	return r
 }
 
+// Deprecated, use request.GetServiceDomain instead
 func GetServiceDomain(service string) (domain string) {
 	domain = service + "." + RootDomain
 	return
@@ -154,7 +194,7 @@ func CompleteCommonParams(request Request, region string) {
 	params["Action"] = request.GetAction()
 	params["Timestamp"] = strconv.FormatInt(time.Now().Unix(), 10)
 	params["Nonce"] = strconv.Itoa(rand.Int())
-	params["RequestClient"] = "SDK_GO_3.0.0"
+	params["RequestClient"] = "SDK_GO_1.0.24"
 }
 
 func ConstructParams(req Request) (err error) {
@@ -195,7 +235,7 @@ func flatStructure(value reflect.Value, request Request, prefix string) (err err
 		} else if kind == reflect.Uint || kind == reflect.Uint64 {
 			request.GetParams()[key] = strconv.FormatUint(field.Uint(), 10)
 		} else if kind == reflect.Float64 {
-			request.GetParams()[key] = strconv.FormatFloat(field.Float(), 'f', 4, 64)
+			request.GetParams()[key] = strconv.FormatFloat(field.Float(), 'f', -1, 64)
 		} else if kind == reflect.Slice {
 			list := value.Field(i)
 			for j := 0; j < list.Len(); j++ {
@@ -218,13 +258,17 @@ func flatStructure(value reflect.Value, request Request, prefix string) (err err
 				} else if kind == reflect.Uint || kind == reflect.Uint64 {
 					request.GetParams()[key] = strconv.FormatUint(vj.Uint(), 10)
 				} else if kind == reflect.Float64 {
-					request.GetParams()[key] = strconv.FormatFloat(vj.Float(), 'f', 4, 64)
+					request.GetParams()[key] = strconv.FormatFloat(vj.Float(), 'f', -1, 64)
 				} else {
-					flatStructure(vj, request, key+".")
+					if err = flatStructure(vj, request, key+"."); err != nil {
+						return
+					}
 				}
 			}
 		} else {
-			flatStructure(reflect.ValueOf(field.Interface()), request, prefix+nameTag+".")
+			if err = flatStructure(reflect.ValueOf(field.Interface()), request, prefix+nameTag+"."); err != nil {
+				return
+			}
 		}
 	}
 	return

@@ -1,4 +1,4 @@
-// Copyright 1999-2018 Tencent Ltd.
+// Copyright (c) 2017-2018 THL A29 Limited, a Tencent company. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package v20170312
 
 import (
@@ -25,20 +26,53 @@ type Client struct {
     common.Client
 }
 
+// Deprecated
 func NewClientWithSecretId(secretId, secretKey, region string) (client *Client, err error) {
+    cpf := profile.NewClientProfile()
     client = &Client{}
-    client.Init(region).WithSecretId(secretId, secretKey)
+    client.Init(region).WithSecretId(secretId, secretKey).WithProfile(cpf)
     return
 }
 
 func NewClient(credential *common.Credential, region string, clientProfile *profile.ClientProfile) (client *Client, err error) {
     client = &Client{}
     client.Init(region).
-        WithSecretId(credential.SecretId, credential.SecretKey).
+        WithCredential(credential).
         WithProfile(clientProfile)
     return
 }
 
+
+func NewAttachInstancesRequest() (request *AttachInstancesRequest) {
+    request = &AttachInstancesRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("batch", APIVersion, "AttachInstances")
+    return
+}
+
+func NewAttachInstancesResponse() (response *AttachInstancesResponse) {
+    response = &AttachInstancesResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 此接口可将已存在实例添加到计算环境中。
+// 实例需要满足如下条件：<br/>
+// 1.实例不在批量计算系统中。<br/>
+// 2.实例状态要求处于运行中。<br/>
+// 3.支持预付费实例，按小时后付费实例，专享子机实例。不支持竞价实例。<br/>
+// 
+// 此接口会将加入到计算环境中的实例重设UserData和重装操作系统。
+func (c *Client) AttachInstances(request *AttachInstancesRequest) (response *AttachInstancesResponse, err error) {
+    if request == nil {
+        request = NewAttachInstancesRequest()
+    }
+    response = NewAttachInstancesResponse()
+    err = c.Send(request, response)
+    return
+}
 
 func NewCreateComputeEnvRequest() (request *CreateComputeEnvRequest) {
     request = &CreateComputeEnvRequest{
@@ -61,6 +95,31 @@ func (c *Client) CreateComputeEnv(request *CreateComputeEnvRequest) (response *C
         request = NewCreateComputeEnvRequest()
     }
     response = NewCreateComputeEnvResponse()
+    err = c.Send(request, response)
+    return
+}
+
+func NewCreateCpmComputeEnvRequest() (request *CreateCpmComputeEnvRequest) {
+    request = &CreateCpmComputeEnvRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("batch", APIVersion, "CreateCpmComputeEnv")
+    return
+}
+
+func NewCreateCpmComputeEnvResponse() (response *CreateCpmComputeEnvResponse) {
+    response = &CreateCpmComputeEnvResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 创建黑石计算环境
+func (c *Client) CreateCpmComputeEnv(request *CreateCpmComputeEnvRequest) (response *CreateCpmComputeEnvResponse, err error) {
+    if request == nil {
+        request = NewCreateCpmComputeEnvRequest()
+    }
+    response = NewCreateCpmComputeEnvResponse()
     err = c.Send(request, response)
     return
 }
@@ -317,6 +376,81 @@ func (c *Client) DescribeComputeEnvs(request *DescribeComputeEnvsRequest) (respo
     return
 }
 
+func NewDescribeCpmOsInfoRequest() (request *DescribeCpmOsInfoRequest) {
+    request = &DescribeCpmOsInfoRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("batch", APIVersion, "DescribeCpmOsInfo")
+    return
+}
+
+func NewDescribeCpmOsInfoResponse() (response *DescribeCpmOsInfoResponse) {
+    response = &DescribeCpmOsInfoResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 创建黑石计算环境时，查询批量计算环境支持的黑石操作系统信息
+func (c *Client) DescribeCpmOsInfo(request *DescribeCpmOsInfoRequest) (response *DescribeCpmOsInfoResponse, err error) {
+    if request == nil {
+        request = NewDescribeCpmOsInfoRequest()
+    }
+    response = NewDescribeCpmOsInfoResponse()
+    err = c.Send(request, response)
+    return
+}
+
+func NewDescribeCvmZoneInstanceConfigInfosRequest() (request *DescribeCvmZoneInstanceConfigInfosRequest) {
+    request = &DescribeCvmZoneInstanceConfigInfosRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("batch", APIVersion, "DescribeCvmZoneInstanceConfigInfos")
+    return
+}
+
+func NewDescribeCvmZoneInstanceConfigInfosResponse() (response *DescribeCvmZoneInstanceConfigInfosResponse) {
+    response = &DescribeCvmZoneInstanceConfigInfosResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 获取批量计算可用区机型配置信息
+func (c *Client) DescribeCvmZoneInstanceConfigInfos(request *DescribeCvmZoneInstanceConfigInfosRequest) (response *DescribeCvmZoneInstanceConfigInfosResponse, err error) {
+    if request == nil {
+        request = NewDescribeCvmZoneInstanceConfigInfosRequest()
+    }
+    response = NewDescribeCvmZoneInstanceConfigInfosResponse()
+    err = c.Send(request, response)
+    return
+}
+
+func NewDescribeInstanceCategoriesRequest() (request *DescribeInstanceCategoriesRequest) {
+    request = &DescribeInstanceCategoriesRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("batch", APIVersion, "DescribeInstanceCategories")
+    return
+}
+
+func NewDescribeInstanceCategoriesResponse() (response *DescribeInstanceCategoriesResponse) {
+    response = &DescribeInstanceCategoriesResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 目前对CVM现有实例族分类，每一类包含若干实例族。该接口用于查询实例分类信息。
+func (c *Client) DescribeInstanceCategories(request *DescribeInstanceCategoriesRequest) (response *DescribeInstanceCategoriesResponse, err error) {
+    if request == nil {
+        request = NewDescribeInstanceCategoriesRequest()
+    }
+    response = NewDescribeInstanceCategoriesResponse()
+    err = c.Send(request, response)
+    return
+}
+
 func NewDescribeJobRequest() (request *DescribeJobRequest) {
     request = &DescribeJobRequest{
         BaseRequest: &tchttp.BaseRequest{},
@@ -417,6 +551,31 @@ func (c *Client) DescribeTask(request *DescribeTaskRequest) (response *DescribeT
     return
 }
 
+func NewDescribeTaskLogsRequest() (request *DescribeTaskLogsRequest) {
+    request = &DescribeTaskLogsRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("batch", APIVersion, "DescribeTaskLogs")
+    return
+}
+
+func NewDescribeTaskLogsResponse() (response *DescribeTaskLogsResponse) {
+    response = &DescribeTaskLogsResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 用于获取任务多个实例标准输出和标准错误日志。
+func (c *Client) DescribeTaskLogs(request *DescribeTaskLogsRequest) (response *DescribeTaskLogsResponse, err error) {
+    if request == nil {
+        request = NewDescribeTaskLogsRequest()
+    }
+    response = NewDescribeTaskLogsResponse()
+    err = c.Send(request, response)
+    return
+}
+
 func NewDescribeTaskTemplatesRequest() (request *DescribeTaskTemplatesRequest) {
     request = &DescribeTaskTemplatesRequest{
         BaseRequest: &tchttp.BaseRequest{},
@@ -442,6 +601,31 @@ func (c *Client) DescribeTaskTemplates(request *DescribeTaskTemplatesRequest) (r
     return
 }
 
+func NewDetachInstancesRequest() (request *DetachInstancesRequest) {
+    request = &DetachInstancesRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("batch", APIVersion, "DetachInstances")
+    return
+}
+
+func NewDetachInstancesResponse() (response *DetachInstancesResponse) {
+    response = &DetachInstancesResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 将添加到计算环境中的实例从计算环境中移出。若是由批量计算自动创建的计算节点实例则不允许移出。
+func (c *Client) DetachInstances(request *DetachInstancesRequest) (response *DetachInstancesResponse, err error) {
+    if request == nil {
+        request = NewDetachInstancesRequest()
+    }
+    response = NewDetachInstancesResponse()
+    err = c.Send(request, response)
+    return
+}
+
 func NewModifyComputeEnvRequest() (request *ModifyComputeEnvRequest) {
     request = &ModifyComputeEnvRequest{
         BaseRequest: &tchttp.BaseRequest{},
@@ -457,7 +641,7 @@ func NewModifyComputeEnvResponse() (response *ModifyComputeEnvResponse) {
     return
 }
 
-// 用于修改计算环境的期望节点数量
+// 用于修改计算环境属性
 func (c *Client) ModifyComputeEnv(request *ModifyComputeEnvRequest) (response *ModifyComputeEnvResponse, err error) {
     if request == nil {
         request = NewModifyComputeEnvRequest()
@@ -488,6 +672,32 @@ func (c *Client) ModifyTaskTemplate(request *ModifyTaskTemplateRequest) (respons
         request = NewModifyTaskTemplateRequest()
     }
     response = NewModifyTaskTemplateResponse()
+    err = c.Send(request, response)
+    return
+}
+
+func NewRetryJobsRequest() (request *RetryJobsRequest) {
+    request = &RetryJobsRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("batch", APIVersion, "RetryJobs")
+    return
+}
+
+func NewRetryJobsResponse() (response *RetryJobsResponse) {
+    response = &RetryJobsResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 用于重试作业中失败的任务实例。
+// 当且仅当作业处于“FAILED”状态，支持重试操作。重试操作成功后，作业会按照“DAG”中指定的任务依赖关系，依次重试各个任务中失败的任务实例。任务实例的历史信息将被重置，如同首次运行一样，参与后续的调度和执行。
+func (c *Client) RetryJobs(request *RetryJobsRequest) (response *RetryJobsResponse, err error) {
+    if request == nil {
+        request = NewRetryJobsRequest()
+    }
+    response = NewRetryJobsResponse()
     err = c.Send(request, response)
     return
 }
@@ -543,6 +753,31 @@ func (c *Client) TerminateComputeNode(request *TerminateComputeNodeRequest) (res
     return
 }
 
+func NewTerminateComputeNodesRequest() (request *TerminateComputeNodesRequest) {
+    request = &TerminateComputeNodesRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("batch", APIVersion, "TerminateComputeNodes")
+    return
+}
+
+func NewTerminateComputeNodesResponse() (response *TerminateComputeNodesResponse) {
+    response = &TerminateComputeNodesResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 用于批量销毁计算节点，不允许重复销毁同一个节点。
+func (c *Client) TerminateComputeNodes(request *TerminateComputeNodesRequest) (response *TerminateComputeNodesResponse, err error) {
+    if request == nil {
+        request = NewTerminateComputeNodesRequest()
+    }
+    response = NewTerminateComputeNodesResponse()
+    err = c.Send(request, response)
+    return
+}
+
 func NewTerminateJobRequest() (request *TerminateJobRequest) {
     request = &TerminateJobRequest{
         BaseRequest: &tchttp.BaseRequest{},
@@ -559,7 +794,8 @@ func NewTerminateJobResponse() (response *TerminateJobResponse) {
 }
 
 // 用于终止作业。
-// 终止作业的效果相当于所含的所有任务实例进行TerminateTaskInstance操作。具体效果和用法可参考TerminateTaskInstance。
+// 当作业处于“SUBMITTED”状态时，禁止终止操作；当作业处于“SUCCEED”状态时，终止操作不会生效。
+// 终止作业是一个异步过程。整个终止过程的耗时和任务总数成正比。终止的效果相当于所含的所有任务实例进行TerminateTaskInstance操作。具体效果和用法可参考TerminateTaskInstance。
 func (c *Client) TerminateJob(request *TerminateJobRequest) (response *TerminateJobResponse, err error) {
     if request == nil {
         request = NewTerminateJobRequest()
@@ -584,12 +820,11 @@ func NewTerminateTaskInstanceResponse() (response *TerminateTaskInstanceResponse
     return
 }
 
-// 用于终止任务实例
-// 对于状态已经为SUCCEED、FAILED的TaskInstance，batch不做处理。
-// 对于状态为SUBMITTED、PENDING、RUNNABLE的TaskInstance，batch会将其置为FAILED状态。
-// 对于状态为STARTING、RUNNING、FAILED_INTERRUPTED的TaskInstance，batch会先终止CVM，然后将状态置为FAILED，因此具有一定耗时。特别是如果CVM正在创建中，此时无法立即销毁CVM，Batch会在旁路注册一个定时销毁操作，在CVM创建好之后异步销毁。
-// 对于状态为FAILED_INTERRUPTED的TaskInstance，TerminateTaskInstance操作实际成功之后，相关资源和配额才会释放。
-// 本接口只支持提交到匿名计算环境的作业（SubmitJob指定ComputeEnv，不指定EnvId）。对于提交到具名计算环境的作业（SubmitJob指定EnvId，不指定ComputeEnv），不支持TerminateTaskInstance和TerminateJob操作。
+// 用于终止任务实例。
+// 对于状态已经为“SUCCEED”和“FAILED”的任务实例，不做处理。
+// 对于状态为“SUBMITTED”、“PENDING”、“RUNNABLE”的任务实例，状态将置为“FAILED”状态。
+// 对于状态为“STARTING”、“RUNNING”、“FAILED_INTERRUPTED”的任务实例，分区两种情况：如果未显示指定计算环境，会先销毁CVM服务器，然后将状态置为“FAILED”，具有一定耗时；如果指定了计算环境EnvId，任务实例状态置为“FAILED”，并重启执行该任务的CVM服务器，具有一定的耗时。
+// 对于状态为“FAILED_INTERRUPTED”的任务实例，终止操作实际成功之后，相关资源和配额才会释放。
 func (c *Client) TerminateTaskInstance(request *TerminateTaskInstanceRequest) (response *TerminateTaskInstanceResponse, err error) {
     if request == nil {
         request = NewTerminateTaskInstanceRequest()

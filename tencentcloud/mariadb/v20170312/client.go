@@ -1,4 +1,4 @@
-// Copyright 1999-2018 Tencent Ltd.
+// Copyright (c) 2017-2018 THL A29 Limited, a Tencent company. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package v20170312
 
 import (
@@ -25,20 +26,47 @@ type Client struct {
     common.Client
 }
 
+// Deprecated
 func NewClientWithSecretId(secretId, secretKey, region string) (client *Client, err error) {
+    cpf := profile.NewClientProfile()
     client = &Client{}
-    client.Init(region).WithSecretId(secretId, secretKey)
+    client.Init(region).WithSecretId(secretId, secretKey).WithProfile(cpf)
     return
 }
 
 func NewClient(credential *common.Credential, region string, clientProfile *profile.ClientProfile) (client *Client, err error) {
     client = &Client{}
     client.Init(region).
-        WithSecretId(credential.SecretId, credential.SecretKey).
+        WithCredential(credential).
         WithProfile(clientProfile)
     return
 }
 
+
+func NewCloneAccountRequest() (request *CloneAccountRequest) {
+    request = &CloneAccountRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("mariadb", APIVersion, "CloneAccount")
+    return
+}
+
+func NewCloneAccountResponse() (response *CloneAccountResponse) {
+    response = &CloneAccountResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 本接口（CloneAccount）用于克隆实例账户。
+func (c *Client) CloneAccount(request *CloneAccountRequest) (response *CloneAccountResponse, err error) {
+    if request == nil {
+        request = NewCloneAccountRequest()
+    }
+    response = NewCloneAccountResponse()
+    err = c.Send(request, response)
+    return
+}
 
 func NewCloseDBExtranetAccessRequest() (request *CloseDBExtranetAccessRequest) {
     request = &CloseDBExtranetAccessRequest{
@@ -137,6 +165,31 @@ func (c *Client) CreateDBInstance(request *CreateDBInstanceRequest) (response *C
         request = NewCreateDBInstanceRequest()
     }
     response = NewCreateDBInstanceResponse()
+    err = c.Send(request, response)
+    return
+}
+
+func NewCreateTmpInstancesRequest() (request *CreateTmpInstancesRequest) {
+    request = &CreateTmpInstancesRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("mariadb", APIVersion, "CreateTmpInstances")
+    return
+}
+
+func NewCreateTmpInstancesResponse() (response *CreateTmpInstancesResponse) {
+    response = &CreateTmpInstancesResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 本接口（CreateTmpInstances）用于创建临时实例。
+func (c *Client) CreateTmpInstances(request *CreateTmpInstancesRequest) (response *CreateTmpInstancesResponse, err error) {
+    if request == nil {
+        request = NewCreateTmpInstancesRequest()
+    }
+    response = NewCreateTmpInstancesResponse()
     err = c.Send(request, response)
     return
 }
@@ -468,6 +521,31 @@ func (c *Client) DescribeDBSlowLogs(request *DescribeDBSlowLogsRequest) (respons
     return
 }
 
+func NewDescribeDatabasesRequest() (request *DescribeDatabasesRequest) {
+    request = &DescribeDatabasesRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("mariadb", APIVersion, "DescribeDatabases")
+    return
+}
+
+func NewDescribeDatabasesResponse() (response *DescribeDatabasesResponse) {
+    response = &DescribeDatabasesResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 本接口（DescribeDatabases）用于查询云数据库实例的数据库列表。
+func (c *Client) DescribeDatabases(request *DescribeDatabasesRequest) (response *DescribeDatabasesResponse, err error) {
+    if request == nil {
+        request = NewDescribeDatabasesRequest()
+    }
+    response = NewDescribeDatabasesResponse()
+    err = c.Send(request, response)
+    return
+}
+
 func NewDescribeFlowRequest() (request *DescribeFlowRequest) {
     request = &DescribeFlowRequest{
         BaseRequest: &tchttp.BaseRequest{},
@@ -533,7 +611,7 @@ func NewDescribeOrdersResponse() (response *DescribeOrdersResponse) {
     return
 }
 
-// 本接口（DescribeOrders）用于查询云数据库订单信息。传入订单Id来查询订单关联的云数据库实例，和对应的任务流程ID。
+// 本接口（DescribeOrders）用于查询云数据库订单信息。传入订单ID来查询订单关联的云数据库实例，和对应的任务流程ID。
 func (c *Client) DescribeOrders(request *DescribeOrdersRequest) (response *DescribeOrdersResponse, err error) {
     if request == nil {
         request = NewDescribeOrdersRequest()
@@ -618,6 +696,31 @@ func (c *Client) DescribeSaleInfo(request *DescribeSaleInfoRequest) (response *D
     return
 }
 
+func NewDescribeSqlLogsRequest() (request *DescribeSqlLogsRequest) {
+    request = &DescribeSqlLogsRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("mariadb", APIVersion, "DescribeSqlLogs")
+    return
+}
+
+func NewDescribeSqlLogsResponse() (response *DescribeSqlLogsResponse) {
+    response = &DescribeSqlLogsResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 本接口（DescribeSqlLogs）用于获取实例SQL日志。
+func (c *Client) DescribeSqlLogs(request *DescribeSqlLogsRequest) (response *DescribeSqlLogsResponse, err error) {
+    if request == nil {
+        request = NewDescribeSqlLogsRequest()
+    }
+    response = NewDescribeSqlLogsResponse()
+    err = c.Send(request, response)
+    return
+}
+
 func NewDescribeUpgradePriceRequest() (request *DescribeUpgradePriceRequest) {
     request = &DescribeUpgradePriceRequest{
         BaseRequest: &tchttp.BaseRequest{},
@@ -639,6 +742,31 @@ func (c *Client) DescribeUpgradePrice(request *DescribeUpgradePriceRequest) (res
         request = NewDescribeUpgradePriceRequest()
     }
     response = NewDescribeUpgradePriceResponse()
+    err = c.Send(request, response)
+    return
+}
+
+func NewFlushBinlogRequest() (request *FlushBinlogRequest) {
+    request = &FlushBinlogRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("mariadb", APIVersion, "FlushBinlog")
+    return
+}
+
+func NewFlushBinlogResponse() (response *FlushBinlogResponse) {
+    response = &FlushBinlogResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 相当于在mysqld中执行flush logs，完成切分的binlog将展示在实例控制台binlog列表里。
+func (c *Client) FlushBinlog(request *FlushBinlogRequest) (response *FlushBinlogResponse, err error) {
+    if request == nil {
+        request = NewFlushBinlogRequest()
+    }
+    response = NewFlushBinlogResponse()
     err = c.Send(request, response)
     return
 }
@@ -917,6 +1045,31 @@ func (c *Client) ResetAccountPassword(request *ResetAccountPasswordRequest) (res
         request = NewResetAccountPasswordRequest()
     }
     response = NewResetAccountPasswordResponse()
+    err = c.Send(request, response)
+    return
+}
+
+func NewRestartDBInstancesRequest() (request *RestartDBInstancesRequest) {
+    request = &RestartDBInstancesRequest{
+        BaseRequest: &tchttp.BaseRequest{},
+    }
+    request.Init().WithApiInfo("mariadb", APIVersion, "RestartDBInstances")
+    return
+}
+
+func NewRestartDBInstancesResponse() (response *RestartDBInstancesResponse) {
+    response = &RestartDBInstancesResponse{
+        BaseResponse: &tchttp.BaseResponse{},
+    }
+    return
+}
+
+// 本接口（RestartDBInstances）用于重启数据库实例
+func (c *Client) RestartDBInstances(request *RestartDBInstancesRequest) (response *RestartDBInstancesResponse, err error) {
+    if request == nil {
+        request = NewRestartDBInstancesRequest()
+    }
+    response = NewRestartDBInstancesResponse()
     err = c.Send(request, response)
     return
 }
